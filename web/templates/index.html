@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthSense - AI Health Diagnosis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .option-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .option-group label {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        select {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .results {
+            display: none;
+            margin-top: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .results.active {
+            display: block;
+        }
+        
+        .results h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        
+        .urgency-banner {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .urgency-critical {
+            background: #ff4444;
+            color: white;
+        }
+        
+        .urgency-urgent {
+            background: #ff8800;
+            color: white;
+        }
+        
+        .urgency-moderate {
+            background: #ffbb33;
+            color: #333;
+        }
+        
+        .urgency-low {
+            background: #00C851;
+            color: white;
+        }
+        
+        .condition {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .condition h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .condition-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-high {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .badge-medium {
+            background: #FF9800;
+            color: white;
+        }
+        
+        .badge-low {
+            background: #9E9E9E;
+            color: white;
+        }
+        
+        .section {
+            margin-top: 20px;
+        }
+        
+        .section h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .section li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .section li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .disclaimer {
+            margin-top: 25px;
+            padding: 15px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #856404;
+        }
+        
+        .error {
+            display: none;
+            padding: 15px;
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            border-radius: 5px;
+            color: #721c24;
+            margin-top: 20px;
+        }
+        
+        .error.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 HealthSense</h1>
+            <p>AI-Powered Health Diagnosis Assistant</p>
+        </div>
+        
+        <div class="content">
+            <form id="diagnosisForm">
+                <div class="form-group">
+                    <label for="symptoms">Describe your symptoms:</label>
+                    <textarea 
+                        id="symptoms" 
+                        name="symptoms" 
+                        rows="5" 
+                        placeholder="e.g., I've been experiencing headaches, nausea, and sensitivity to light for the past 2 days..."
+                        required
+                    ></textarea>
+                </div>
+                
+                <div class="options">
+                    <div class="option-group">
+                        <label for="promptType">Prompt Strategy:</label>
+                        <select id="promptType" name="promptType">
+                            <option value="zero">Zero-shot</option>
+                            <option value="few">Few-shot</option>
+                            <option value="role">Role-based</option>
+                        </select>
+                    </div>
+                    
+                    <div class="option-group">
+                        <label>&nbsp;</label>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="lifestyle" name="lifestyle">
+                            <label for="lifestyle" style="margin: 0;">Include lifestyle suggestions</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" id="submitBtn">Analyze Symptoms</button>
+            </form>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing symptoms...</p>
+            </div>
+            
+            <div class="error" id="error"></div>
+            
+            <div class="results" id="results"></div>
+        </div>
+    </div>
+    
+    <script>
+        const form = document.getElementById('diagnosisForm');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+        const error = document.getElementById('error');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Reset UI
+            loading.classList.add('active');
+            results.classList.remove('active');
+            error.classList.remove('active');
+            submitBtn.disabled = true;
+            
+            const formData = {
+                symptoms: document.getElementById('symptoms').value,
+                prompt_type: document.getElementById('promptType').value,
+                include_lifestyle: document.getElementById('lifestyle').checked
+            };
+            
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'An error occurred');
+                }
+                
+                displayResults(data);
+                
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                loading.classList.remove('active');
+                submitBtn.disabled = false;
+            }
+        });
+        
+        function displayResults(data) {
+            let html = '<h2>Analysis Results</h2>';
+            
+            // Urgency banner
+            if (data.flagged) {
+                const urgencyClass = `urgency-${data.urgency_level.toLowerCase()}`;
+                html += `<div class="urgency-banner ${urgencyClass}">
+                    ⚠️ URGENCY LEVEL: ${data.urgency_level.toUpperCase()}
+                </div>`;
+            }
+            
+            // Conditions
+            if (data.possible_conditions && data.possible_conditions.length > 0) {
+                data.possible_conditions.forEach((cond, index) => {
+                    const confidenceClass = `badge-${cond.confidence.toLowerCase()}`;
+                    html += `
+                        <div class="condition">
+                            <h3>${index + 1}. ${cond.condition}</h3>
+                            <div class="condition-meta">
+                                <span class="badge ${confidenceClass}">Confidence: ${cond.confidence}</span>
+                                <span class="badge">Urgency: ${cond.urgency}</span>
+                            </div>
+                            <p><strong>Reasoning:</strong> ${cond.reasoning}</p>
+                            <p><strong>Recommendation:</strong> ${cond.recommendation}</p>
+                            ${cond.related_symptoms && cond.related_symptoms.length > 0 ? 
+                                `<p><strong>Related Symptoms:</strong> ${cond.related_symptoms.join(', ')}</p>` : ''}
+                        </div>
+                    `;
+                });
+            }
+            
+            // Next steps
+            if (data.next_steps && data.next_steps.length > 0) {
+                html += `
+                    <div class="section">
+                        <h3>📝 Recommended Next Steps</h3>
+                        <ul>
+                            ${data.next_steps.map(step => `<li>${step}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            // Lifestyle suggestions
+            if (data.lifestyle_suggestions && data.lifestyle_suggestions.length > 0) {
+                html += `
+                    <div class="section">
+                        <h3>💡 Lifestyle Suggestions</h3>
+                        <ul>
+                            ${data.lifestyle_suggestions.map(suggestion => `<li>${suggestion}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            // Disclaimer
+            if (data.disclaimer) {
+                html += `<div class="disclaimer">⚠️ ${data.disclaimer}</div>`;
+            }
+            
+            results.innerHTML = html;
+            results.classList.add('active');
+        }
+        
+        function showError(message) {
+            error.textContent = `Error: ${message}`;
+            error.classList.add('active');
+        }
+    </script>
+</body>
+</html>
+
